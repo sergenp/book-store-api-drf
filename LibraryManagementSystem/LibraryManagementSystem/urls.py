@@ -13,6 +13,7 @@ router.register(r'author', views.AuthorView, 'author')
 router.register(r'publisher', views.PublisherView, 'publisher')
 router.register(r'book', views.BookView, 'book')
 router.register(r'category', views.CategoryView, 'category')
+router.register(r'user', views.UserView, 'user')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

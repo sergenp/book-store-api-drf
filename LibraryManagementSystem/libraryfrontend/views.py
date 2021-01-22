@@ -1,6 +1,10 @@
+from django.contrib.auth.models import Permission, User
+from django.http.response import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
-from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, UserSerializer
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
 
 class AuthorView(viewsets.ReadOnlyModelViewSet):
@@ -26,3 +30,20 @@ class PublisherView(viewsets.ReadOnlyModelViewSet):
     queryset = PublisherModel.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ("name",)
+
+class UserView(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    permission_classes = (IsAuthenticated, )
+    authentication_classes = (JSONWebTokenAuthentication, )
+    
+    def get(self, request, format=None):
+        content = {
+            'user' : unicode(request.user),
+            'auht' : unicode(request.auth)
+        }
+        return JsonResponse(content)
+        
+        
+        
+        
