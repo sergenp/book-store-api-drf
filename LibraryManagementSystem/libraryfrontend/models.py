@@ -20,7 +20,7 @@ class AuthorModel(BaseModel):
     about = models.TextField(null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     death_date = models.DateField(null=True, blank=True)
-    author_image = models.ImageField()
+    author_image = models.ImageField(default="placeholder_author.png")
 
     def __str__(self):
         return self.name
@@ -42,9 +42,14 @@ class CategoryModel(BaseModel):
 class BookModel(BaseModel):
     name = models.CharField(max_length=100)
     published_date = models.DateField(null=True, blank=True)
-    book_cover = models.ImageField()
+    book_cover = models.ImageField(default="placeholder_cover.png")
     description = models.TextField()
-    amount = models.IntegerField(default=1)
+    # how many books that are currently in storage
+    store_amount = models.IntegerField(default=1)
+    # page count of the book, no need to specify it
+    pages = models.IntegerField(null=True, blank=True)
+    #ISBN doesn't exist for books that have been published before 1970
+    ISBN = models.IntegerField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     author = models.ForeignKey(AuthorModel, on_delete=models.RESTRICT)
     category = models.ForeignKey(CategoryModel, on_delete=models.RESTRICT, null=True, blank=True)

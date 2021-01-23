@@ -3,8 +3,10 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include 
 from rest_framework import routers
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.conf.urls.static import static
 from libraryfrontend import views
-
+from . import settings
 from rest_framework_jwt.views import obtain_jwt_token
 
 
@@ -18,5 +20,6 @@ router.register(r'user', views.UserView, 'user')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    url(r'^api-token-auth/', obtain_jwt_token)
-]
+    path('login/', obtain_jwt_token)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

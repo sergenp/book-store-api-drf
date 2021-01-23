@@ -40,7 +40,7 @@ class UserView(viewsets.ReadOnlyModelViewSet):
     def get(self, request, format=None):
         content = {
             'user' : unicode(request.user),
-            'auht' : unicode(request.auth)
+            'auth' : unicode(request.auth)
         }
         return JsonResponse(content)
         
