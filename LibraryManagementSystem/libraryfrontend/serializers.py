@@ -6,6 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password','last_login', 'is_active', )
+        many = False
 
 class LibraryBaseSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,7 +16,6 @@ class LibraryBaseSerializer(serializers.ModelSerializer):
 class BookSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = BookModel
-#       exclude = LibraryBaseSerializer.Meta.exclude + ('id',)
 
 class AuthorSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
