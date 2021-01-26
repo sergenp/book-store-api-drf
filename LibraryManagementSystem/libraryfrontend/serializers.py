@@ -1,13 +1,27 @@
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel, BaseModel
+from django.contrib.auth import password_validation
+from django.core import exceptions
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ('password','last_login', 'is_active', )
-        many = False
-
+        fields = ('id', 'username', 'password', 'email')
+        extra_kwargs = {'password': {'write_only': True}}
+    
+    def validate_password(self, value):
+        password_validation.validate_password(value)
+    
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+        
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password')
+        instance.set_password(password)
+        return super(UserSerializer, self).update(instance, validated_data)        
+            
 class LibraryBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseModel

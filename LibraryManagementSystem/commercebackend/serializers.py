@@ -14,7 +14,7 @@ class OrderSerializer(LibraryBaseSerializer):
 class CartSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = CartModel
-
+        
 class CartItemSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = CartItemModel

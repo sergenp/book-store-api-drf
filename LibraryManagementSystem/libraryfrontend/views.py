@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, UserSerializer
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
@@ -32,7 +32,7 @@ class PublisherView(viewsets.ReadOnlyModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ("name",)
 
-class UserView(viewsets.ReadOnlyModelViewSet):
+class UserView(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated, )
     authentication_classes = (JSONWebTokenAuthentication, )
     serializer_class = UserSerializer
@@ -40,4 +40,10 @@ class UserView(viewsets.ReadOnlyModelViewSet):
     
     def get_queryset(self):
         return User.objects.all().filter(pk=self.request.user.id)
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            self.permission_classes = (AllowAny,)
+
+        return super(UserView, self).get_permissions()
     

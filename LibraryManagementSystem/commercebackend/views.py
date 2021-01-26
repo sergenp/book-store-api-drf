@@ -1,11 +1,10 @@
-from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
-from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.response import Response
 from rest_framework.exceptions import ParseError
+from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
+from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
 
 class CartView(viewsets.ModelViewSet):
 
@@ -31,11 +30,16 @@ class CartView(viewsets.ModelViewSet):
         
         cart_item, created = CartItemModel.objects.get_or_create(cart=cart, book=book)
         if not created:
-            # if the cart item isn't created, increase the amount of it
-            cart_item.amount += 1 
-            cart_item.save()
-            cart.items.add(book.id) # add immediately updates the database
-            return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"}, status=status.HTTP_201_CREATED, headers=self.headers)
+            # if the cart item isn't created, and there is enough book in the store increase the amount of it
+            if book.store_amount > cart_item.amount:
+                cart_item.amount += 1
+                book.store_amount -= 1
+                book.save()
+                cart_item.save()
+                cart.items.add(book.id) # add immediately updates the database
+                return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"}, status=status.HTTP_201_CREATED, headers=self.headers)
+            else:
+                return Response(data={"detail" : f"There is no more {book} left in the store"}, status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
         else:
             cart.items.add(book.id) # add function immediately updates the database
             return Response(data={"detail" : f"Added {book} to {cart}"}, status=status.HTTP_201_CREATED, headers=self.headers)
