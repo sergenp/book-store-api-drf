@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel, BaseModel
 from django.contrib.auth import password_validation
-from django.core import exceptions
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

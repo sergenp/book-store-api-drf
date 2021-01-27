@@ -43,7 +43,17 @@ class CartView(viewsets.ModelViewSet):
         else:
             cart.items.add(book.id) # add function immediately updates the database
             return Response(data={"detail" : f"Added {book} to {cart}"}, status=status.HTTP_201_CREATED, headers=self.headers)
-            
+    
+    def delete(self, request):
+        try:
+            cart = CartModel.objects.get(user=request.user.id, deleted=0, bought=0)
+            cart.delete()
+            return Response(data={"detail" : "Cart has been deleted"}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(data={"detail" : "There are no cart belonging to user"}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        
         
 class OrderView(viewsets.GenericViewSet,
                 viewsets.mixins.CreateModelMixin,
