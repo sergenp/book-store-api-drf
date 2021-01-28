@@ -3,3 +3,5 @@ env/
 __pycache__
 .vs/
 .vscode/
+
+LibraryManagementSystem/tmp/requestlogs.log

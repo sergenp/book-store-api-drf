@@ -1,5 +1,3 @@
-from django.contrib.auth.models import Permission, User
-from rest_framework import serializers
 from libraryfrontend.serializers import LibraryBaseSerializer
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel
 

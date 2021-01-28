@@ -15,9 +15,12 @@ router.register(r'publisher', library_views.PublisherView, 'publisher')
 router.register(r'book', library_views.BookView, 'book')
 router.register(r'category', library_views.CategoryView, 'category')
 router.register(r'user', library_views.UserView, 'user')
+# commerce backend
 router.register(r'cart', commerce_views.CartView, 'cart')
 router.register(r'order', commerce_views.OrderView, 'order')
 router.register(r'shipping', commerce_views.ShippingView, 'shipping')
+router.register(r'checkout', commerce_views.CheckoutView, 'checkout')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),

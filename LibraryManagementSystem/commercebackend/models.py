@@ -3,13 +3,14 @@ from django.conf import settings
 from libraryfrontend.models import BookModel, BaseModel
 
 class ShippingModel(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     address = models.TextField() # address of the shipping
     city = models.CharField(max_length=85) # city
     country = models.CharField(max_length=74) # country
     zipcode = models.CharField(max_length=12) # zipcode
 
 class CartModel(BaseModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField(BookModel, through="CartItemModel")
     bought = models.BooleanField() # if the cart has been checkedout
 

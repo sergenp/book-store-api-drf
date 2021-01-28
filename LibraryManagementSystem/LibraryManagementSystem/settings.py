@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 import datetime
 from pathlib import Path
-import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -147,14 +147,15 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
     'EXCEPTION_HANDLER': (
-        'requestlogs.views.exception_handler',
+        'requestlogs.views.exception_handler'
     )
 }
 
+if DEBUG:
+    JWT_AUTH = {
+        'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=300),
+    }
 
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(hours=300),
-}
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -167,8 +168,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-# where the react app will be served
 
 
 # Static files (CSS, JavaScript, Images)
