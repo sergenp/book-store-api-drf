@@ -6,16 +6,22 @@ from rest_framework.exceptions import APIException, ParseError
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
 from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
 
-class CartView(viewsets.ModelViewSet):
+class CartView(viewsets.GenericViewSet,
+               viewsets.mixins.RetrieveModelMixin,
+               viewsets.mixins.CreateModelMixin,
+               viewsets.mixins.DestroyModelMixin):
 
     serializer_class = CartSerializer
     authentication_classes = (JSONWebTokenAuthentication, )
     permission_classes = (IsAuthenticated, )
     pagination_class = None
     
-    def get_queryset(self):
-        return CartModel.objects.all().filter(user=self.request.user, deleted=0, bought=0)
-
+    def get(self, request):
+        try:
+            return CartModel.objects.get(user=request.user, deleted=0, bought=0)
+        except CartModel.DoesNotExist:
+            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_404_NOT_FOUND)
+    
     def create(self, request, *args, **kwargs):
         # get the cart of the user from the database if it exists, or create a new one
         cart, _ = CartModel.objects.get_or_create(user=request.user, deleted=0, bought=0)
