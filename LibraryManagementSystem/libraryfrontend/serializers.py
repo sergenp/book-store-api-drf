@@ -25,10 +25,7 @@ class LibraryBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseModel
         exclude = ('is_test_data', 'created_on', 'modified_on', 'created_by', 'modified_by', 'deleted')
-
-class BookSerializer(LibraryBaseSerializer):
-    class Meta(LibraryBaseSerializer.Meta):
-        model = BookModel
+        depth = 1
 
 class AuthorSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
@@ -41,3 +38,13 @@ class CategorySerializer(LibraryBaseSerializer):
 class PublisherSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = PublisherModel
+
+class BookSerializer(LibraryBaseSerializer):
+    # adding serializers manually ensured that base serializer is being called on each request,
+    # otherwise every data about the foreign keys are shown
+    # this way exclude field on the base is obeyed
+    author = AuthorSerializer(many=False, read_only=True) 
+    category = CategorySerializer(many=False, read_only=True)
+    publisher = PublisherSerializer(many=False, read_only=True)
+    class Meta(LibraryBaseSerializer.Meta):
+        model = BookModel
