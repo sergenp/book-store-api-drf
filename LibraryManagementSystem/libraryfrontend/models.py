@@ -7,7 +7,8 @@ class BaseModel(models.Model):
     is_test_data = models.BooleanField(default=False)
     created_on = models.DateTimeField(default=now)
     modified_on = models.DateTimeField(null=True, blank=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(class)s_createdby', null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(class)s_createdby', 
+                                   null=True, blank=True, on_delete=models.SET_NULL)
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL,
                             related_name='%(class)s_modifiedby', null=True, blank=True, on_delete=models.SET_NULL)
     deleted = models.BooleanField(default=False)
@@ -53,9 +54,9 @@ class BookModel(BaseModel):
     #ISBN doesn't exist for books that have been published before 1970
     ISBN = models.IntegerField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    author = models.ForeignKey(AuthorModel, on_delete=models.RESTRICT)
-    category = models.ForeignKey(CategoryModel, on_delete=models.RESTRICT, null=True, blank=True)
-    publisher = models.ForeignKey(PublisherModel, on_delete=models.RESTRICT, null=True, blank=True)
+    author = models.ForeignKey(AuthorModel, on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.ForeignKey(CategoryModel, on_delete=models.SET_NULL, null=True, blank=True)
+    publisher = models.ForeignKey(PublisherModel, on_delete=models.SET_NULL, null=True, blank=True)
     
 
     def __str__(self):
