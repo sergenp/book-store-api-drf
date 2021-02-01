@@ -21,7 +21,14 @@ class CartItemModel(BaseModel):
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     book = models.ForeignKey(BookModel, on_delete=models.CASCADE)
     amount = models.IntegerField(default=1)
-
+    
+    def delete(self):
+        # when deleting a cart item, we need to restore the store_amount of the book
+        book = BookModel.objects.get(pk=self.book.id)
+        book.store_amount += self.amount
+        book.save()
+        super(CartItemModel, self).delete()
+        
     def __str__(self):
         return f"Cart {self.cart}'s Item {self.id} (Book {self.book})"
 

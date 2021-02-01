@@ -8,12 +8,10 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, UserSerializer
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
 
-is_test = 1 if settings.DEBUG else 0
-
 
 class AuthorView(viewsets.ReadOnlyModelViewSet):
     serializer_class = AuthorSerializer
-    queryset = AuthorModel.objects.all().filter(deleted=0, is_test_data=is_test)
+    queryset = AuthorModel.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_fields = ("name",)
     search_fields = ('name',)
@@ -21,7 +19,7 @@ class AuthorView(viewsets.ReadOnlyModelViewSet):
     
 class BookView(viewsets.ReadOnlyModelViewSet):
     serializer_class = BookSerializer
-    queryset = BookModel.objects.all().filter(deleted=0, is_test_data=is_test)
+    queryset = BookModel.objects.all()
     filter_backends = (DjangoFilterBackend, OrderingFilter, SearchFilter)
     filterset_fields = ("name", "author", "category", "publisher")
     ordering_fields = ("price", "name", "published_date", "store_amount", "pages")
@@ -30,7 +28,7 @@ class BookView(viewsets.ReadOnlyModelViewSet):
     
 class CategoryView(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
-    queryset = CategoryModel.objects.all().filter(deleted=0, is_test_data=is_test)
+    queryset = CategoryModel.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_fields = ("name",)
     search_fields = ('name',)
@@ -38,7 +36,7 @@ class CategoryView(viewsets.ReadOnlyModelViewSet):
 
 class PublisherView(viewsets.ReadOnlyModelViewSet):
     serializer_class = PublisherSerializer
-    queryset = PublisherModel.objects.all().filter(deleted=0, is_test_data=is_test)
+    queryset = PublisherModel.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter)
     filterset_fields = ("name",)
     search_fields = ('name',)

@@ -1,12 +1,9 @@
-from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.response import Response
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
 from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
-
-is_test = 1 if settings.DEBUG else 0
 
 class CartView(viewsets.GenericViewSet,
                viewsets.mixins.RetrieveModelMixin,
@@ -20,23 +17,23 @@ class CartView(viewsets.GenericViewSet,
     
     def get(self, request):
         try:
-            return CartModel.objects.get(user=request.user, deleted=0, bought=0, is_test_data=is_test)
+            return CartModel.objects.get(user=request.user, bought=0)
         except CartModel.DoesNotExist:
-            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
     
     def create(self, request, *args, **kwargs):
         # get the cart of the user from the database if it exists, or create a new one
-        cart, _ = CartModel.objects.get_or_create(user=request.user, deleted=0, bought=0, is_test_data=is_test)
+        cart, _ = CartModel.objects.get_or_create(user=request.user, bought=0)
         # if the item_serializer is valid, let's create a cart item and add it to our cart
         # get the requested book
         try:
-            book = BookModel.objects.get(pk=request.data["book"], deleted=0, is_test_data=is_test)
+            book = BookModel.objects.get(pk=request.data["book"])
         except BookModel.DoesNotExist:
-            return Response(detail=f"Book with id {request.data['book']} couldn't be found", status=status.HTTP_404_NOT_FOUND)
+            return Response(data={'detail' : f"Book with id {request.data['book']} couldn't be found"}, status=status.HTTP_400_BAD_REQUEST)
         
         cart_item_serializer = CartItemSerializer(data={"book" : book.id, "cart" : cart.id})
         cart_item_serializer.is_valid(raise_exception=True)
-        cart_item, created = CartItemModel.objects.get_or_create(cart=cart, book=book, deleted=0, is_test_data=is_test)
+        cart_item, created = CartItemModel.objects.get_or_create(cart=cart, book=book)
         if not created:
             # if the cart item isn't created, and there is enough book in the store increase the amount of it
             if book.store_amount > cart_item.amount:
@@ -53,22 +50,32 @@ class CartView(viewsets.GenericViewSet,
             return Response(data={"detail" : f"Added {book} to Cart"}, status=status.HTTP_201_CREATED, headers=self.headers)
     
     def delete(self, request):
-        cart = CartModel.objects.get(user=request.user.id, deleted=0, bought=0, is_test_data=is_test)
+        try:
+            cart = CartModel.objects.get(user=request.user.id, bought=0)
+        except CartModel.DoesNotExist:
+            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
+            
         #if the request has book id attached to it, remove X amount of books from the cart
         if request.data.get("book", ""):
             book_id = request.data["book"]
             try:
-                cart_item = CartItemModel.objects.get(cart=cart, book=book_id, deleted=0, is_test_data=is_test)
+                book = BookModel.get(pk=book_id) 
+            except BookModel.DoesNotExist:
+                return Response(data={"detail" : f"Book {book_id} is not found"})
+                
+            try:
+                cart_item = CartItemModel.objects.get(cart=cart, book=book_id)
                 delete_amount = int(request.data.get("delete_amount", 1))
                 # if the amount of cart_item is bigger than zero and delete_amount,
                 # reduce the item amount in the cart, otherwise delete the cart_item 
                 if cart_item.amount > 0 and cart_item.amount > delete_amount:
                     cart_item.amount -= delete_amount
+                    book.store_amount += delete_amount
                     cart_item.save()
+                    book.save()
                     return Response(data={"detail" : f"Deleted {delete_amount} of Book {book_id} from Cart"})
                 else:
-                    cart_item.deleted = 1
-                    cart_item.save()
+                    cart_item.delete(request.user) # deleting the cart item restores book's store amount
                     return Response(data={"detail" : f"Deleted Book {book_id} from Cart"})
                     
             except CartItemModel.DoesNotExist:
@@ -76,13 +83,9 @@ class CartView(viewsets.GenericViewSet,
         
         else:
             #otherwise delete the cart entirely
-            try:
-                cart.deleted = 1
-                cart.save()
-                return Response(data={"detail" : "Cart has been deleted"}, status=status.HTTP_200_OK)
-            except Exception:
-                return Response(data={"detail" : "There are no cart belonging to user"}, status=status.HTTP_400_BAD_REQUEST)
-            
+            cart.delete(request.user) # this soft deletes the card because of the basemanager
+            return Response(data={"detail" : "Cart has been deleted"}, status=status.HTTP_200_OK)
+        
         
 class OrderView(viewsets.GenericViewSet,
                 viewsets.mixins.RetrieveModelMixin,
@@ -94,7 +97,7 @@ class OrderView(viewsets.GenericViewSet,
     pagination_class = None
     
     def get_queryset(self):
-        return OrderModel.objects.all().filter(user=self.request.user.id, deleted=0, is_test_data=is_test)
+        return OrderModel.objects.all().filter(user=self.request.user.id)
     
 class ShippingView(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin,
@@ -107,7 +110,7 @@ class ShippingView(viewsets.GenericViewSet,
     pagination_class = None
     
     def get_queryset(self):
-        return ShippingModel.objects.all().filter(user=self.request.user.id, deleted=0)
+        return ShippingModel.objects.all().filter(user=self.request.user.id)
 
 class CheckoutView(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin):
@@ -121,16 +124,16 @@ class CheckoutView(viewsets.GenericViewSet,
         shipping_adress_id = int(request.data.get("shipping_id", 1)) # if a shipping id is specified, get it, otherwise use the first one user provided
         # get user's cart
         try:
-            cart = CartModel.objects.get(user=user, bought=0, deleted=0, is_test_data=is_test)
+            cart = CartModel.objects.get(user=user, bought=0)
         except CartModel.DoesNotExist:
-            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
         # get user's shipping
         try:
-            shipping = ShippingModel.objects.get(pk=shipping_adress_id, user=user, deleted=0, is_test_data=is_test)
+            shipping = ShippingModel.objects.get(pk=shipping_adress_id, user=user)
         except ShippingModel.DoesNotExist:
-            return Response(data={"detail" : "There is no active shipping adress of the user, please add a shipping address"}, status=status.status.HTTP_404_NOT_FOUND)
+            return Response(data={"detail" : "There is no active shipping adress of the user, please add a shipping address"}, status=status.HTTP_400_BAD_REQUEST)
         
-        serialized_data = OrderSerializer(data=OrderModel.objects.create(cart=cart, shipping=shipping, is_test_data=is_test))
+        serialized_data = OrderSerializer(data=OrderModel.objects.create(cart=cart, shipping=shipping))
         cart.bought = 1
         cart.save()
         return Response(data=serialized_data.data, status=status.HTTP_201_CREATED)

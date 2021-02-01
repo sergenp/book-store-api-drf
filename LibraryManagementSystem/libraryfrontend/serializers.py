@@ -24,7 +24,7 @@ class UserSerializer(serializers.ModelSerializer):
 class LibraryBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BaseModel
-        exclude = ('is_test_data', 'created_on', 'modified_on', 'created_by', 'modified_by', 'deleted')
+        exclude = ('is_test_data', 'created_at', 'modified_at', 'created_by', 'modified_by', 'deleted_at', 'deleted_by')
         depth = 1
 
 class AuthorSerializer(LibraryBaseSerializer):

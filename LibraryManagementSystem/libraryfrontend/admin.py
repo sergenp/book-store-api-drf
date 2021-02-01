@@ -1,8 +1,20 @@
 from django.contrib import admin
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
 
-# Register your models here.
-admin.site.register(AuthorModel)
-admin.site.register(BookModel)
-admin.site.register(CategoryModel)
-admin.site.register(PublisherModel)
+
+@admin.register(AuthorModel, BookModel, CategoryModel, PublisherModel)
+class BaseAdminModel(admin.ModelAdmin):
+    def get_queryset(self, request):
+        qs = self.model.all_objects
+        # The below is copied from the base implementation in BaseModelAdmin to prevent other changes in behavior
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
+
+    def delete_model(self, request, obj):
+        # it's safe to hard delete test data
+        if obj.is_test_data:
+            obj.hard_delete()
+        else:
+            obj.delete()

@@ -101,24 +101,60 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
 Every model is derived from the same BaseModel (declared in LibraryManagementSystem/libraryfrontend/models.py)
 
 ```py
+is_test = 1 if settings.DEBUG else 0
+
+class BaseQuerySet(models.QuerySet):
+    def delete(self):
+        return super(BaseQuerySet, self).update(deleted_at=now())
+
+    def hard_delete(self):
+        return super(BaseQuerySet, self).delete()
+
+class BaseManager(models.Manager):
+    def __init__(self, *args, **kwargs):
+        self.get_deleted = kwargs.pop('get_deleted', False)
+        super(BaseManager, self).__init__(*args, **kwargs)
+
+    def get_queryset(self):
+        if not self.get_deleted:
+            return BaseQuerySet(self.model).filter(deleted_at=None, is_test_data = is_test)
+        return BaseQuerySet(self.model).filter(is_test_data = is_test)
+
+    def hard_delete(self):
+        return self.get_queryset().hard_delete()
 
 class BaseModel(models.Model):
-  is_test_data = models.BooleanField(default=False) 
-  created_on = models.DateTimeField(default=now)
-  modified_on = models.DateTimeField(null=True, blank=True)
-  created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(class)s_createdby', 
-                                 null=True, blank=True, on_delete=models.SET_NULL)
-  modified_by = models.ForeignKey(settings.AUTH_USER_MODEL,
-                          related_name='%(class)s_modifiedby', null=True, blank=True, on_delete=models.SET_NULL)
-  deleted = models.BooleanField(default=False)
 
-  class Meta:
-      abstract = True
+    objects = BaseManager()
+    all_objects = BaseManager(get_deleted=False)
+    
+    is_test_data = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=now)
+    modified_at = models.DateTimeField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(class)s_createdby', 
+                                   null=True, blank=True, on_delete=models.SET_NULL)
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            related_name='%(class)s_modifiedby', null=True, blank=True, on_delete=models.SET_NULL)
+    deleted_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                            related_name='%(class)s_deletedby', null=True, blank=True, on_delete=models.SET_NULL)
+    class Meta:
+        abstract = True
+    
+    def delete(self):
+        self.deleted_at = now()
+        self.save()
+
+    def hard_delete(self):
+        super(BaseModel, self).delete()
 ```
 
-- Models with attributes is_test_data = 1 or deleted=1 doesn't show up in the api views
+- Models with attributes is_test_data = 1 or deleted_at = 'some date' doesn't show up in the api views
   - Unless django settings.DEBUG is True, then the is_test_data = 1 shows up in the API views, this is here to make sure test datas don't show up in production
-  - deleted flag is there to make sure no data is lost in the database
+  - deleted_at flag is there to make sure no data is lost in the database
+
+- With this implementation (Soft Deleting) you can call delete() method from anywhere without a worry of losing your data
 
 #### Models for Frontend
 
@@ -205,7 +241,14 @@ class CartItemModel(BaseModel):
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     book = models.ForeignKey(BookModel, on_delete=models.CASCADE)
     amount = models.IntegerField(default=1)
-
+    
+    def delete(self):
+        # when deleting a cart item, we need to restore the store_amount of the book
+        book = BookModel.objects.get(pk=self.book.id)
+        book.store_amount += self.amount
+        book.save()
+        super(CartItemModel, self).delete()
+        
     def __str__(self):
         return f"Cart {self.cart}'s Item {self.id} (Book {self.book})"
 ```
