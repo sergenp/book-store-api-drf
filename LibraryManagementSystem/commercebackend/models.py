@@ -1,3 +1,4 @@
+from django.utils.timezone import now
 from django.db import models
 from django.conf import settings
 from libraryfrontend.models import BookModel, BaseModel
@@ -12,6 +13,7 @@ class ShippingModel(BaseModel):
 class CartModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField(BookModel, through="CartItemModel")
+    bought_at = models.DateField(default=now)
     bought = models.BooleanField() # if the cart has been checkedout
 
     def __str__(self):
@@ -36,6 +38,7 @@ class OrderModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     shipping = models.ForeignKey(ShippingModel, on_delete=models.CASCADE)
+    ordered_at = models.DateField(default=now)
     
     def __str__(self):
         return f"Order {self.id} of {self.cart}"
