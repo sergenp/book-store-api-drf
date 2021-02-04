@@ -17,7 +17,8 @@ class CartView(viewsets.GenericViewSet,
     
     def get(self, request):
         try:
-            return CartModel.objects.get(user=request.user, bought=0)
+            serialized = CartSerializer(CartModel.objects.get(user=request.user, bought=0))
+            return Response(data=serialized.data, status=status.HTTP_200_OK)
         except CartModel.DoesNotExist:
             return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -59,7 +60,7 @@ class CartView(viewsets.GenericViewSet,
         if request.data.get("book", ""):
             book_id = request.data["book"]
             try:
-                book = BookModel.get(pk=book_id) 
+                book = BookModel.objects.get(pk=book_id) 
             except BookModel.DoesNotExist:
                 return Response(data={"detail" : f"Book {book_id} is not found"})
                 

@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 
-is_test = 1 if settings.DEBUG else 0
 
 class BaseQuerySet(models.QuerySet):
     def delete(self):
@@ -19,9 +18,9 @@ class BaseManager(models.Manager):
 
     def get_queryset(self):
         if self.get_deleted:
-            return BaseQuerySet(self.model).filter(is_test_data = is_test)
+            return BaseQuerySet(self.model).filter(is_test_data=settings.DEBUG)
         else:
-            return BaseQuerySet(self.model).filter(deleted_at=None, is_test_data = is_test)
+            return BaseQuerySet(self.model).filter(deleted_at=None, is_test_data=settings.DEBUG)
 
     def hard_delete(self):
         return self.get_queryset().hard_delete()
@@ -31,7 +30,7 @@ class BaseModel(models.Model):
     objects = BaseManager()
     all_objects = BaseManager(get_deleted=True)
     
-    is_test_data = models.BooleanField(default=False)
+    is_test_data = models.BooleanField(default=settings.DEBUG)
     created_at = models.DateTimeField(default=now)
     modified_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)

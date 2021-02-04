@@ -13,9 +13,15 @@ class ShippingModel(BaseModel):
 class CartModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField(BookModel, through="CartItemModel")
-    bought_at = models.DateField(default=now)
-    bought = models.BooleanField() # if the cart has been checkedout
-
+    bought = models.BooleanField(default=0) # if the cart has been checkedout
+    
+    @property
+    def total_price(self):
+        total = 0
+        for item in self.items.all():
+            total += item.total_price
+        return total
+    
     def __str__(self):
         return f"User {self.user}'s Cart {self.id}"
 
@@ -23,6 +29,10 @@ class CartItemModel(BaseModel):
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     book = models.ForeignKey(BookModel, on_delete=models.CASCADE)
     amount = models.IntegerField(default=1)
+    
+    @property
+    def total_price(self):
+        return self.book.price * self.amount
     
     def delete(self):
         # when deleting a cart item, we need to restore the store_amount of the book
