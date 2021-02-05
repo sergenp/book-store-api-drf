@@ -99,6 +99,7 @@ class OrderView(viewsets.GenericViewSet,
     
     def get_queryset(self):
         return OrderModel.objects.all().filter(user=self.request.user.id)
+
     
 class ShippingView(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin,
@@ -112,6 +113,7 @@ class ShippingView(viewsets.GenericViewSet,
     
     def get_queryset(self):
         return ShippingModel.objects.all().filter(user=self.request.user.id)
+
 
 class CheckoutView(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin):

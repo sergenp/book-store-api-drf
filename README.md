@@ -96,6 +96,15 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
   - Users can checkout Carts
     - POST to checkout endpoint( /api/checkout ) creates appropriate Shipping Model in the database for the current User and if said User currently have a Cart
 
+
+- Payment
+    - Carts can be bought via bitcoin. For this repository's purposes, when creating Payment for Carts, bitcoin testnet is being used
+    - Every Cart payment will have it's own generated bitcoin address in the database. These addresses are being saved as 'wif's. 
+        - TODO
+            - Check if these payments addresses have recieved the correct amount of bitcoin
+            - If they have, create an Order model in the database for the cart of the payment
+            - Create an utility function that transfers every bitcoin in the payment addresses to another address, this function is not necessary, although the owner of the book store may want to convert every payment to cash, and transferring every fund to one address would make that goal easier to achieve 
+
 ### Models
 
 Every model is derived from the same BaseModel (declared in LibraryManagementSystem/libraryfrontend/models.py)

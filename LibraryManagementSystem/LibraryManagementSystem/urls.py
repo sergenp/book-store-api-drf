@@ -4,6 +4,7 @@ from rest_framework import routers
 from django.conf.urls.static import static
 from libraryfrontend import views as library_views
 from commercebackend import views as commerce_views
+from cryptopayment import views as crypto_views
 
 from . import settings
 from rest_framework_jwt.views import obtain_jwt_token
@@ -20,8 +21,9 @@ router.register(r'cart', commerce_views.CartView, 'cart')
 router.register(r'order', commerce_views.OrderView, 'order')
 router.register(r'shipping', commerce_views.ShippingView, 'shipping')
 router.register(r'checkout', commerce_views.CheckoutView, 'checkout')
-
-
+# payment gate
+router.register(r'payment', crypto_views.CreateQRPayment, 'payment')
+    
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
