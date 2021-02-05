@@ -11,6 +11,7 @@ class BaseQuerySet(models.QuerySet):
     def hard_delete(self):
         return super(BaseQuerySet, self).delete()
 
+
 class BaseManager(models.Manager):
     def __init__(self, *args, **kwargs):
         self.get_deleted = kwargs.pop('get_deleted', False)
@@ -24,6 +25,7 @@ class BaseManager(models.Manager):
 
     def hard_delete(self):
         return self.get_queryset().hard_delete()
+
 
 class BaseModel(models.Model):
 
@@ -51,6 +53,7 @@ class BaseModel(models.Model):
 
     def hard_delete(self):
         super(BaseModel, self).delete()
+       
         
 class AuthorModel(BaseModel):
     name = models.CharField(max_length=100)
@@ -77,6 +80,7 @@ class CategoryModel(BaseModel):
 
     def __str__(self):
         return self.name
+
 
 class BookModel(BaseModel):
     name = models.CharField(max_length=100)

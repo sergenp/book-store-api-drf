@@ -42,12 +42,12 @@ class CartView(viewsets.GenericViewSet,
                 book.store_amount -= 1
                 book.save()
                 cart_item.save()
-                cart.items.add(book.id) # add func immediately updates the database
+                cart.items.add(cart_item.id) # add func immediately updates the database
                 return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"}, status=status.HTTP_201_CREATED, headers=self.headers)
             else:
                 return Response(data={"detail" : f"There is no more {book} left in the store"}, status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
         else:
-            cart.items.add(book.id) # add function immediately updates the database
+            cart.items.add(cart_item.id) # add function immediately updates the database
             return Response(data={"detail" : f"Added {book} to Cart"}, status=status.HTTP_201_CREATED, headers=self.headers)
     
     def delete(self, request):
@@ -99,6 +99,7 @@ class OrderView(viewsets.GenericViewSet,
     
     def get_queryset(self):
         return OrderModel.objects.all().filter(user=self.request.user.id)
+
     
 class ShippingView(viewsets.GenericViewSet,
                    viewsets.mixins.CreateModelMixin,
@@ -111,32 +112,4 @@ class ShippingView(viewsets.GenericViewSet,
     pagination_class = None
     
     def get_queryset(self):
-        return ShippingModel.objects.all().filter(user=self.request.user.id)
-
-class CheckoutView(viewsets.GenericViewSet,
-                   viewsets.mixins.CreateModelMixin):
-    
-    authentication_classes = (JSONWebTokenAuthentication, )
-    permission_classes = (IsAuthenticated, )
-    serializer_class = OrderSerializer
-
-    def create(self, request, *args, **kwargs):
-        user = request.user
-        shipping_adress_id = int(request.data.get("shipping_id", 1)) # if a shipping id is specified, get it, otherwise use the first one user provided
-        # get user's cart
-        try:
-            cart = CartModel.objects.get(user=user, bought=0)
-        except CartModel.DoesNotExist:
-            return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
-        # get user's shipping
-        try:
-            shipping = ShippingModel.objects.get(pk=shipping_adress_id, user=user)
-        except ShippingModel.DoesNotExist:
-            return Response(data={"detail" : "There is no active shipping adress of the user, please add a shipping address"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        serialized_data = OrderSerializer(data=OrderModel.objects.create(cart=cart, shipping=shipping))
-        cart.bought = 1
-        cart.save()
-        return Response(data=serialized_data.data, status=status.HTTP_201_CREATED)
-    
-    
+        return ShippingModel.objects.all().filter(user=self.request.user.id, is_current=1)
