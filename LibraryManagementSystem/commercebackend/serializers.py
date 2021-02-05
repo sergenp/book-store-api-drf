@@ -10,13 +10,14 @@ class OrderSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = OrderModel
         depth = 0
-
-class CartSerializer(LibraryBaseSerializer):
-    class Meta(LibraryBaseSerializer.Meta):
-        model = CartModel
-        depth = 0
         
 class CartItemSerializer(LibraryBaseSerializer):
     class Meta(LibraryBaseSerializer.Meta):
         model = CartItemModel
+        depth = 0
+
+class CartSerializer(LibraryBaseSerializer):
+    items = CartItemSerializer(many=True)
+    class Meta(LibraryBaseSerializer.Meta):
+        model = CartModel
         depth = 0

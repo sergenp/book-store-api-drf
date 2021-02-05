@@ -29,6 +29,7 @@ class Invoice(BaseModel):
     payment = models.ForeignKey(Payment, on_delete=models.PROTECT)
     order = models.ForeignKey(OrderModel, on_delete=models.PROTECT)
     status_code = models.CharField(max_length=3)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)    
     
     def __str__(self):
         return f"Order {self.order}'s invoice"

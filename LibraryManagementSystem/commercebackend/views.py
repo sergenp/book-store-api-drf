@@ -42,12 +42,12 @@ class CartView(viewsets.GenericViewSet,
                 book.store_amount -= 1
                 book.save()
                 cart_item.save()
-                cart.items.add(book.id) # add func immediately updates the database
+                cart.items.add(cart_item.id) # add func immediately updates the database
                 return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"}, status=status.HTTP_201_CREATED, headers=self.headers)
             else:
                 return Response(data={"detail" : f"There is no more {book} left in the store"}, status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
         else:
-            cart.items.add(book.id) # add function immediately updates the database
+            cart.items.add(cart_item.id) # add function immediately updates the database
             return Response(data={"detail" : f"Added {book} to Cart"}, status=status.HTTP_201_CREATED, headers=self.headers)
     
     def delete(self, request):

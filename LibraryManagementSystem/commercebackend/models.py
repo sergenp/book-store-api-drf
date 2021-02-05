@@ -12,7 +12,7 @@ class ShippingModel(BaseModel):
 
 class CartModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    items = models.ManyToManyField(BookModel, through="CartItemModel")
+    items = models.ManyToManyField("CartItemModel")
     bought = models.BooleanField(default=0) # if the cart has been checkedout
     
     @property
