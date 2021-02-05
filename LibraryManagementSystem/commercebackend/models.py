@@ -9,6 +9,11 @@ class ShippingModel(BaseModel):
     city = models.CharField(max_length=85) # city
     country = models.CharField(max_length=74) # country
     zipcode = models.CharField(max_length=12) # zipcode
+    is_current = models.BooleanField(default=1)
+    
+    class Meta:
+        unique_together = ('user', 'is_current') # a user can only have one current address
+        
 
 class CartModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
