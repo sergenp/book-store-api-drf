@@ -19,6 +19,13 @@ cd LibraryMangementSystem
 py manage.py runserver localhost:5000
 ```
 
+You can access to localhost:5000/admin/ url with this login data:
+```
+username : sergen
+password : sergen123
+```
+
+
 ### Deployment
 App is written in Django, so this link should suffice [Django Deployment Checklist](https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/) 
 
@@ -67,7 +74,7 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
                 }
           ```
 
-- JWT Token Authorization
+#### JWT Token Authorization
   - Every POST/GET requests listed in here must have a header (except of course login):
     ```json
         "Authorization" : "JWT token" 
@@ -94,10 +101,10 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
             - It deletes the Cart from db (sets the deleted flag 1)
             
   - Users can checkout Carts
-    - POST to checkout endpoint( /api/checkout ) creates appropriate Shipping Model in the database for the current User and if said User currently have a Cart
+    - POST to payment endpoint( /api/payment ) creates appropriate QR code for the Payment and once the payment is completed, OrderModel is created
 
 
-- Payment
+#### Payment
     - Carts can be bought via bitcoin. For this repository's purposes, when creating Payment for Carts, bitcoin testnet is being used
     - payment_checker.py in cryptopayment app checks if the created Payment model's bitcoin address has the correct value of bitcoin in it, then it creates an Order and Invoice model based on the Payment information (it checks these wallets per 60 seconds in a different thread)
     - Every Payment will have it's own generated bitcoin address in the database. These addresses are being saved as 'wif's. 
@@ -109,8 +116,6 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
 Every model is derived from the same BaseModel (declared in LibraryManagementSystem/libraryfrontend/models.py)
 
 ```py
-is_test = 1 if settings.DEBUG else 0
-
 class BaseQuerySet(models.QuerySet):
     def delete(self):
         return super(BaseQuerySet, self).update(deleted_at=now())
@@ -118,39 +123,43 @@ class BaseQuerySet(models.QuerySet):
     def hard_delete(self):
         return super(BaseQuerySet, self).delete()
 
+
 class BaseManager(models.Manager):
     def __init__(self, *args, **kwargs):
         self.get_deleted = kwargs.pop('get_deleted', False)
         super(BaseManager, self).__init__(*args, **kwargs)
 
     def get_queryset(self):
-        if not self.get_deleted:
-            return BaseQuerySet(self.model).filter(deleted_at=None, is_test_data = is_test)
-        return BaseQuerySet(self.model).filter(is_test_data = is_test)
+        if self.get_deleted:
+            return BaseQuerySet(self.model).filter(is_test_data=settings.DEBUG)
+        else:
+            return BaseQuerySet(self.model).filter(deleted_at=None, is_test_data=settings.DEBUG)
 
     def hard_delete(self):
         return self.get_queryset().hard_delete()
 
+
 class BaseModel(models.Model):
 
     objects = BaseManager()
-    all_objects = BaseManager(get_deleted=False)
+    all_objects = BaseManager(get_deleted=True)
     
-    is_test_data = models.BooleanField(default=False)
+    is_test_data = models.BooleanField(default=settings.DEBUG)
     created_at = models.DateTimeField(default=now)
     modified_at = models.DateTimeField(null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
     
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='%(class)s_createdby', 
+    created_by = models.ForeignKey(User, related_name='%(class)s_createdby', 
                                    null=True, blank=True, on_delete=models.SET_NULL)
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+    modified_by = models.ForeignKey(User,
                             related_name='%(class)s_modifiedby', null=True, blank=True, on_delete=models.SET_NULL)
-    deleted_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+    deleted_by = models.ForeignKey(User,
                             related_name='%(class)s_deletedby', null=True, blank=True, on_delete=models.SET_NULL)
     class Meta:
         abstract = True
     
-    def delete(self):
+    def delete(self, deleted_by_user=None):
+        self.deleted_by = deleted_by_user
         self.deleted_at = now()
         self.save()
 
@@ -230,15 +239,27 @@ class ShippingModel(BaseModel):
     city = models.CharField(max_length=85) # city
     country = models.CharField(max_length=74) # country
     zipcode = models.CharField(max_length=12) # zipcode
+    is_current = models.BooleanField(default=1)
+    
+    class Meta:
+        unique_together = ('user', 'is_current') # a user can only have one current address
+        
 ```
 
 ##### Cart
 ```py
 class CartModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    items = models.ManyToManyField(BookModel, through="CartItemModel")
-    bought = models.BooleanField() # if the cart has been checkedout
-
+    items = models.ManyToManyField("CartItemModel")
+    bought = models.BooleanField(default=0) # if the cart has been checkedout
+    
+    @property
+    def total_price(self):
+        total = 0
+        for item in self.items.all():
+            total += item.total_price
+        return total
+    
     def __str__(self):
         return f"User {self.user}'s Cart {self.id}"
 ```
@@ -249,6 +270,10 @@ class CartItemModel(BaseModel):
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     book = models.ForeignKey(BookModel, on_delete=models.CASCADE)
     amount = models.IntegerField(default=1)
+    
+    @property
+    def total_price(self):
+        return self.book.price * self.amount
     
     def delete(self):
         # when deleting a cart item, we need to restore the store_amount of the book
@@ -267,11 +292,44 @@ class OrderModel(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
     cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)
     shipping = models.ForeignKey(ShippingModel, on_delete=models.CASCADE)
+    ordered_at = models.DateField(default=now)
     
     def __str__(self):
         return f"Order {self.id} of {self.cart}"
 ```
+#### Models for Bitcoin Payment
 
+```py
+class Payment(BaseModel):
+    btc_address_wif = models.TextField() # created wif of the btc adress for the payment
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL) # user of the payment
+    cart = models.ForeignKey(CartModel, on_delete=models.PROTECT) # cart of the user
+    shipping = models.ForeignKey(ShippingModel, on_delete=models.PROTECT) # shipping address
+    success = models.BooleanField()
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    total_price_btc = models.DecimalField(max_digits=10, decimal_places=8)
+    qr_image = models.ImageField()
+    
+    def delete(self):
+        if self.success:
+            return super(Payment, self).delete()
+        else:
+            raise ProtectedError("Can't delete object, Payment isn't completed.")
+    
+    def hard_delete(self):
+        raise ProtectedError("Payment objects must not be hard deleted, they include the wif of the bitcoin address, doing so might lose you access to the wallet")
+    
+    def __str__(self):
+        return f"Payment created for {self.cart} for user {self.user}"
+    
+class Invoice(BaseModel):
+    payment = models.ForeignKey(Payment, on_delete=models.PROTECT)
+    order = models.ForeignKey(OrderModel, on_delete=models.PROTECT)
+    status_code = models.CharField(max_length=3)
+    
+    def __str__(self):
+        return f"Order {self.order}'s invoice"
+```
 
 
 
