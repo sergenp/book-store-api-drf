@@ -105,11 +105,12 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
 
 
 #### Payment
-    - Carts can be bought via bitcoin. For this repository's purposes, when creating Payment for Carts, bitcoin testnet is being used
-    - payment_checker.py in cryptopayment app checks if the created Payment model's bitcoin address has the correct value of bitcoin in it, then it creates an Order and Invoice model based on the Payment information (it checks these wallets per 60 seconds in a different thread)
-    - Every Payment will have it's own generated bitcoin address in the database. These addresses are being saved as 'wif's. 
-        - TODO
-            - Create an utility function that transfers every bitcoin in the payment addresses to another address, this function is not necessary, although the owner of the book store may want to convert every payment to cash, and transferring every fund to one address would make that goal easier to achieve 
+- Carts can be bought via bitcoin. For this repository's purposes, when creating Payment for Carts, bitcoin testnet is being used
+- payment_checker.py in cryptopayment app checks if the created Payment model's bitcoin address has the correct value of bitcoin in it, then it creates an Order and Invoice model based on the Payment information (it checks these wallets per 60 seconds in a different thread)
+- Every Payment will have it's own generated bitcoin address in the database. These addresses are being saved as 'wif's. 
+- Created an utility function that transfers every bitcoin in the payment addresses to another address, this function is not necessary, although the owner of the book store may want to convert every payment to cash, and transferring every fund to one address would make that goal easier to achieve, check out the move_payment() function in the payment_checker.py
+    - this is a transaction from a payment I made from the database's wif wallet to my testnet account using the method:
+        https://www.blockchain.com/tr/btc-testnet/tx/a4aecf0fe3435cc2161fedbcea84171301207e3ce4a758845cd52b66c2986875
 
 ### Models
 

@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from libraryfrontend import views as library_views
 from commercebackend import views as commerce_views
 from cryptopayment import views as crypto_views
-from cryptopayment.payment_gateway import create_payment_checker
+from cryptopayment.payment_gateway import create_payment_checker, move_payments
 
 from . import settings
 from rest_framework_jwt.views import obtain_jwt_token
@@ -33,3 +33,5 @@ urlpatterns = [
 
 # create the payment checker thread
 create_payment_checker()
+# move the payments back to my testnet wallet
+#move_payments('tb1qe4f69mm056hqhhagphfqe5qp0wnggrxz3rn3nz')

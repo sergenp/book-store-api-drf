@@ -6,6 +6,7 @@
 from commercebackend.models import CartModel, OrderModel
 from cryptopayment.models import Payment, Invoice
 import bit
+import bit.exceptions
 import threading
 import time
 
@@ -38,3 +39,18 @@ def check_payment_success():
                 payment.save()
                 create_order(payment)
         time.sleep(60) # wait a minute, continue checking payments
+
+# this function moves all the successfull payments from payment wallets to a specificed wallet
+# move_payments('bitcoin_wallet_address')
+def move_payments(to_wallet):
+    # get all the payments with success 1
+    for payment in Payment.objects.all().filter(success=1):
+        # get the wallet
+        wallet = bit.PrivateKeyTestnet(payment.btc_address_wif)
+        # create transactions
+        try:
+            tx_id = wallet.send([], leftover=to_wallet)
+            print(f"Payment from {wallet} to {to_wallet} is successfull.\nTxid:\n{tx_id}")
+        except bit.exceptions.InsufficientFunds as e:
+            print(f"Payment wallet {wallet} has insufficent funds for a transaction, \n{e}")
+            continue
