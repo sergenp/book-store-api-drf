@@ -4,6 +4,7 @@ from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.response import Response
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
 from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
+from libraryfrontend.serializers import BookSerializer
 
 class CartView(viewsets.GenericViewSet,
                viewsets.mixins.RetrieveModelMixin,
@@ -43,12 +44,21 @@ class CartView(viewsets.GenericViewSet,
                 book.save()
                 cart_item.save()
                 cart.items.add(cart_item.id) # add func immediately updates the database
-                return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"}, status=status.HTTP_201_CREATED, headers=self.headers)
+                return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}", 
+                                      "item" : BookSerializer(book, context={'request': request}).data,
+                                      "amount" : cart_item.amount}, 
+                                status=status.HTTP_201_CREATED, headers=self.headers)
             else:
-                return Response(data={"detail" : f"There is no more {book} left in the store"}, status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
+                return Response(data={"detail" : f"There is no more {book} left in the store", 
+                                      "item" : None, 
+                                      "amount" : 0}, 
+                                status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
         else:
             cart.items.add(cart_item.id) # add function immediately updates the database
-            return Response(data={"detail" : f"Added {book} to Cart"}, status=status.HTTP_201_CREATED, headers=self.headers)
+            return Response(data={"detail" : f"Added {book} to Cart", 
+                                  "item" : BookSerializer(book, context={'request': request}).data, 
+                                  "amount" : 1}, 
+                            status=status.HTTP_201_CREATED, headers=self.headers)
     
     def delete(self, request):
         try:
