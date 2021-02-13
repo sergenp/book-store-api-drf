@@ -90,7 +90,7 @@ class CartView(viewsets.GenericViewSet,
                     return Response(data={"detail" : f"Deleted Book {book_id} from Cart"})
                     
             except CartItemModel.DoesNotExist:
-                return Response(data={"detail" : f"Book {book_id} is not in the Cart"})
+                return Response(data={"detail" : f"Book {book_id} is not in the Cart"}, status=status.HTTP_400_BAD_REQUEST)
         
         else:
             #otherwise delete the cart entirely

@@ -39,12 +39,12 @@ class CartItemModel(BaseModel):
     def total_price(self):
         return self.book.price * self.amount
     
-    def delete(self):
+    def delete(self, user):
         # when deleting a cart item, we need to restore the store_amount of the book
         book = BookModel.objects.get(pk=self.book.id)
         book.store_amount += self.amount
         book.save()
-        super(CartItemModel, self).delete()
+        super(CartItemModel, self).delete(user)
         
     def __str__(self):
         return f"Cart {self.cart}'s Item {self.id} (Book {self.book})"
