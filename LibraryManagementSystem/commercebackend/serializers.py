@@ -1,4 +1,4 @@
-from libraryfrontend.serializers import LibraryBaseSerializer
+from libraryfrontend.serializers import LibraryBaseSerializer, BookSerializer
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel
 from rest_framework import serializers
 
@@ -8,6 +8,7 @@ class ShippingSerializer(LibraryBaseSerializer):
         depth = 0
         
 class CartItemSerializer(LibraryBaseSerializer):
+    book = BookSerializer(many=False)
     class Meta(LibraryBaseSerializer.Meta):
         model = CartItemModel
         depth = 0

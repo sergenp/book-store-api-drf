@@ -18,7 +18,7 @@ class CartView(viewsets.GenericViewSet,
     
     def get(self, request):
         try:
-            serialized = CartSerializer(CartModel.objects.get(user=request.user, bought=0))
+            serialized = CartSerializer(CartModel.objects.get(user=request.user, bought=0), context={'request': request})
             return Response(data=serialized.data, status=status.HTTP_200_OK)
         except CartModel.DoesNotExist:
             return Response(data={"detail" : "There is no active cart of the user"}, status=status.HTTP_400_BAD_REQUEST)
@@ -29,35 +29,29 @@ class CartView(viewsets.GenericViewSet,
         # if the item_serializer is valid, let's create a cart item and add it to our cart
         # get the requested book
         try:
-            book = BookModel.objects.get(pk=request.data["book"])
+            book = BookModel.objects.get(pk=request.data.get("book", -1))
         except BookModel.DoesNotExist:
-            return Response(data={'detail' : f"Book with id {request.data['book']} couldn't be found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'detail' : f"Book couldn't be found"}, status=status.HTTP_400_BAD_REQUEST)
         
-        cart_item_serializer = CartItemSerializer(data={"book" : book.id, "cart" : cart.id})
-        cart_item_serializer.is_valid(raise_exception=True)
+        serialized_book = BookSerializer(book, context={'request': request}).data
         cart_item, created = CartItemModel.objects.get_or_create(cart=cart, book=book)
+        
         if not created:
             # if the cart item isn't created, and there is enough book in the store increase the amount of it
-            if book.store_amount > cart_item.amount:
+            if book.store_amount > 0:
                 cart_item.amount += 1
                 book.store_amount -= 1
                 book.save()
                 cart_item.save()
                 cart.items.add(cart_item.id) # add func immediately updates the database
-                return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}", 
-                                      "item" : BookSerializer(book, context={'request': request}).data,
-                                      "amount" : cart_item.amount}, 
+                return Response(data={"detail" : f"Increased {book} amount to {cart_item.amount}"},
                                 status=status.HTTP_201_CREATED, headers=self.headers)
             else:
-                return Response(data={"detail" : f"There is no more {book} left in the store", 
-                                      "item" : None, 
-                                      "amount" : 0}, 
+                return Response(data={"detail" : f"There is no more {book} left in the store"},
                                 status=status.HTTP_400_BAD_REQUEST, headers=self.headers)                
         else:
             cart.items.add(cart_item.id) # add function immediately updates the database
-            return Response(data={"detail" : f"Added {book} to Cart", 
-                                  "item" : BookSerializer(book, context={'request': request}).data, 
-                                  "amount" : 1}, 
+            return Response(data={"detail" : f"Added {book} to Cart"},
                             status=status.HTTP_201_CREATED, headers=self.headers)
     
     def delete(self, request):
@@ -73,7 +67,8 @@ class CartView(viewsets.GenericViewSet,
                 book = BookModel.objects.get(pk=book_id) 
             except BookModel.DoesNotExist:
                 return Response(data={"detail" : f"Book {book_id} is not found"})
-                
+            
+            serialized_book = BookSerializer(book, context={'request': request}).data
             try:
                 cart_item = CartItemModel.objects.get(cart=cart, book=book_id)
                 delete_amount = int(request.data.get("delete_amount", 1))
@@ -84,10 +79,10 @@ class CartView(viewsets.GenericViewSet,
                     book.store_amount += delete_amount
                     cart_item.save()
                     book.save()
-                    return Response(data={"detail" : f"Deleted {delete_amount} of Book {book_id} from Cart"})
+                    return Response(data={"detail" : f"Removed {delete_amount} {book.name} from Cart"})
                 else:
                     cart_item.delete(request.user) # deleting the cart item restores book's store amount
-                    return Response(data={"detail" : f"Deleted Book {book_id} from Cart"})
+                    return Response(data={"detail" : f"Removed {book.name} from Cart"})
                     
             except CartItemModel.DoesNotExist:
                 return Response(data={"detail" : f"Book {book_id} is not in the Cart"}, status=status.HTTP_400_BAD_REQUEST)
