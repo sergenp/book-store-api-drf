@@ -23,6 +23,7 @@ router.register(r'order', commerce_views.OrderView, 'order')
 router.register(r'shipping', commerce_views.ShippingView, 'shipping')
 # payment gate
 router.register(r'payment', crypto_views.CreateQRPayment, 'payment')
+router.register(r'register', library_views.RegisterView, 'register')
 
 
 urlpatterns = [

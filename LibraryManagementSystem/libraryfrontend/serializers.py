@@ -3,21 +3,27 @@ from rest_framework import serializers
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel, BaseModel
 from django.contrib.auth import password_validation
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'email')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ('id', 'username', 'email', 'password')
+        extra_kwargs = {'password' : {'write_only': True}}
+        
+    def create(self, validated_data):
+        return User.objects.create_user(validated_data['username'],
+                                        validated_data['email'], 
+                                        validated_data['password'])
     
     def validate_password(self, value):
         password_validation.validate_password(value)
-    
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
+        
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email')
         
     def update(self, instance, validated_data):
-        password = validated_data.pop('password')
+        password = validated_data.get('password', instance.password)
         instance.set_password(password)
         return super(UserSerializer, self).update(instance, validated_data)        
             

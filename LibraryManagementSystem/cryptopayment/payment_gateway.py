@@ -18,7 +18,7 @@ def create_order(payment):
     print(f"{invoice} has been created")
     
 def create_payment_checker():
-    threading.Thread(target=check_payment_success).start()
+    threading.Thread(target=check_payment_success, daemon=True).start()
 
 def check_payment_success():
     while True:

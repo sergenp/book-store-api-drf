@@ -1,11 +1,17 @@
 from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, UserSerializer
+from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, RegisterSerializer, UserSerializer
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
+from rest_framework_jwt.settings import api_settings
+
+
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 class AuthorView(viewsets.ReadOnlyModelViewSet):
@@ -50,9 +56,19 @@ class UserView(viewsets.ModelViewSet):
     def get_queryset(self):
         return User.objects.all().filter(pk=self.request.user.id)
 
-    def get_permissions(self):
-        if self.request.method == 'POST':
-            self.permission_classes = (AllowAny,)
+class RegisterView(viewsets.ModelViewSet):
+   serializer_class = RegisterSerializer
+   get_queryset = User.objects.all()
+   permission_classes = (AllowAny,)
 
-        return super(UserView, self).get_permissions()
-    
+   def create(self, request, *args, **kwargs):
+      serializer = self.get_serializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      user = serializer.save()
+      payload = jwt_payload_handler(user)
+      token = jwt_encode_handler(payload)
+      return Response(
+          data={
+              "user": UserSerializer(user,context=self.get_serializer_context()).data,
+              "token" : token
+              })
