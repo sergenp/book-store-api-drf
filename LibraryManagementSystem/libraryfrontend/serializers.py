@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import AuthorModel, BookModel, CategoryModel, PublisherModel, BaseModel
 from django.contrib.auth import password_validation
+from django.core.validators import validate_email as email_validator
+from django.core.exceptions import ValidationError
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +18,19 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     def validate_password(self, value):
         password_validation.validate_password(value)
+        return value
+
+    def validate_email(self, value):
+        email_validator(value)
+        return value
+    
+    def validate_username(self, value):
+        # for some reason User object of the django doesn't raise a validation error
+        # when the length of the username is less than 8? so raise it manually
+        if len(value) >= 8:
+            return value 
+        else:
+            raise ValidationError(message="Username length must be greater than 7", code=400)
         
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

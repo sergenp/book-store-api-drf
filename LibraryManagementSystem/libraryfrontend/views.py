@@ -62,13 +62,13 @@ class RegisterView(viewsets.ModelViewSet):
    permission_classes = (AllowAny,)
 
    def create(self, request, *args, **kwargs):
-      serializer = self.get_serializer(data=request.data)
-      serializer.is_valid(raise_exception=True)
-      user = serializer.save()
-      payload = jwt_payload_handler(user)
-      token = jwt_encode_handler(payload)
-      return Response(
-          data={
-              "user": UserSerializer(user,context=self.get_serializer_context()).data,
-              "token" : token
-              })
+       serializer = self.get_serializer(data=request.data)
+       serializer.is_valid(raise_exception=True)
+       user = serializer.save()
+       payload = jwt_payload_handler(user)
+       token = jwt_encode_handler(payload)
+       return Response(
+           data={
+               "user": UserSerializer(user,context=self.get_serializer_context()).data,
+               "token" : token
+               })
