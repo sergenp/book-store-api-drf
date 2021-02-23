@@ -23,12 +23,11 @@ router.register(r'order', commerce_views.OrderView, 'order')
 router.register(r'shipping', commerce_views.ShippingView, 'shipping')
 # payment gate
 router.register(r'payment', crypto_views.CreateQRPayment, 'payment')
-router.register(r'register', library_views.RegisterView, 'register')
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('register/',  library_views.RegisterView.as_view({'post' : 'create'})),
     path('login/', obtain_jwt_token)
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
