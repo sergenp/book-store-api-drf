@@ -27,7 +27,11 @@ password : sergen123
 
 
 ### Deployment
-App is written in Django, so this link should suffice [Django Deployment Checklist](https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/) 
+
+Be sure set DEBUG = False, is_test_data in BaseModel (which every model is derived from) is dependent on this setting, if you set DEBUG False, is_test_data will be False and the API won't show up data with is_test_data = False, so the initial data from this repository's database won't show up.   
+
+For Rest:
+[Django Deployment Checklist](https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/) 
 
 ### Features
 
@@ -35,35 +39,13 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
 - book endpoint has url parameter that makes it easy to filter 
   - you can filter books by author, publisher,category, as well as order them via price, or search books via their names
 - These endpoints are all paginated (Max 50 results per page) and will return a data in this structure:
-    - /api/author endpoint 
+    - for instance /api/author endpoint gives this json
     - ```json
-        {
-            "count": 15,
-            "next": null,
-            "previous": null,
-            "results": [
-                    {
-                        "id": 3,
-                        "name": "Cornell Crowcombe",
-                        "about": "Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.\r\n\r\nMorbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.\r\n\r\nFusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.\r\n\r\nSed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.",
-                        "birth_date": null,
-                        "death_date": null,
-                        "author_image": "http://localhost:5000/media/placeholder_author.png"
-                    },
-                    {
-                        "id": 4,
-                        "name": "Yorgo Mebius",
-                        "about": "Fusce consequat. Nulla nisl. Nunc nisl.\r\n\r\nDuis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.\r\n\r\nIn hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.\r\n\r\nAliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.\r\n\r\nSed ante. Vivamus tortor. Duis mattis egestas metus.",
-                        "birth_date": null,
-                        "death_date": null,
-                        "author_image": "http://localhost:5000/media/placeholder_author.png"
-                    },
-                ]
-        }
-      ```
-- These endpoints also can be accessed via their ids in the route, 
-    - /api/author/3/ would return a data like this:
-        - ```json
+      {
+        "count": 15,
+        "next": null,
+        "previous": null,
+        "results": [
                 {
                     "id": 3,
                     "name": "Cornell Crowcombe",
@@ -71,8 +53,30 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
                     "birth_date": null,
                     "death_date": null,
                     "author_image": "http://localhost:5000/media/placeholder_author.png"
-                }
-          ```
+                },
+                {
+                    "id": 4,
+                    "name": "Yorgo Mebius",
+                    "about": "Fusce consequat. Nulla nisl. Nunc nisl.\r\n\r\nDuis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.\r\n\r\nIn hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante. Nulla justo.\r\n\r\nAliquam quis turpis eget elit sodales scelerisque. Mauris sit amet eros. Suspendisse accumsan tortor quis turpis.\r\n\r\nSed ante. Vivamus tortor. Duis mattis egestas metus.",
+                    "birth_date": null,
+                    "death_date": null,
+                    "author_image": "http://localhost:5000/media/placeholder_author.png"
+                },
+            ]
+      }
+    ```
+- These endpoints also can be accessed via their ids in the route, 
+    - /api/author/3/ would return a data like this:
+        - ```json
+          {
+            "id": 3,
+            "name": "Cornell Crowcombe",
+            "about": "Nullam porttitor lacus at turpis. Donec posuere metus vitae ipsum. Aliquam non mauris.\r\n\r\nMorbi non lectus. Aliquam sit amet diam in magna bibendum imperdiet. Nullam orci pede, venenatis non, sodales sed, tincidunt eu, felis.\r\n\r\nFusce posuere felis sed lacus. Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl. Nunc rhoncus dui vel sem.\r\n\r\nSed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.",
+            "birth_date": null,
+            "death_date": null,
+            "author_image": "http://localhost:5000/media/placeholder_author.png"
+          }
+        ```
 
 #### JWT Token Authorization
   - Every POST/GET requests listed in here must have a header (except of course login):
@@ -87,16 +91,16 @@ App is written in Django, so this link should suffice [Django Deployment Checkli
   - Users can add/remove books to/from their Carts
     - POST to Cart endpoint (/api/cart/) with a book id creates a CartItem in the database:
       ```py
-          class CartItemModel(BaseModel):
-            cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)   
-            book = models.ForeignKey(BookModel, on_delete=models.CASCADE)   
-            amount = models.IntegerField(default=1) 
+      class CartItemModel(BaseModel):
+          cart = models.ForeignKey(CartModel, on_delete=models.CASCADE)   
+          book = models.ForeignKey(BookModel, on_delete=models.CASCADE)   
+          amount = models.IntegerField(default=1) 
       ```
       if the CartItem already is created, amount is increased by 1
     - DELETE to Cart endpoint:
         - with a book data:
-            - If there is CartItem with the book and amount is >1, it decreases amount by 1
-            - Otherwise deletes the book
+            - If there is CartItem with the book and amount is >1, it decreases amount by 1, readds the amount to BookModel's store_amount
+            - Otherwise deletes the CartItem
         - without a book data:
             - It deletes the Cart from db (sets the deleted flag 1)
             
@@ -225,9 +229,30 @@ class BookModel(BaseModel):
     category = models.ForeignKey(CategoryModel, on_delete=models.SET_NULL, null=True, blank=True)
     publisher = models.ForeignKey(PublisherModel, on_delete=models.SET_NULL, null=True, blank=True)
     
+    @property
+    def overall_rating(self):
+        # get all the BookRatingModel from the database
+        ratings = BookRatingModel.objects.all().filter(book=self.id)
+        if len(ratings) > 0:
+            return sum([x.rating for x in ratings]) / len(ratings)
+        else:
+            return 0
 
     def __str__(self):
         return self.name
+```
+##### BookRating
+```py
+class BookRatingModel(BaseModel):
+    book = models.ForeignKey(BookModel, on_delete=models.CASCADE, null=False, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)], default=0)    
+
+    class Meta:
+        unique_together = ['book', 'user']
+
+    def __str__(self):
+        return f"Book {self.book.name} rated {self.rating} by User {self.user.username}"
 ```
 
 #### Models for Commerce
@@ -244,7 +269,6 @@ class ShippingModel(BaseModel):
     
     class Meta:
         unique_together = ('user', 'is_current') # a user can only have one current address
-        
 ```
 
 ##### Cart
