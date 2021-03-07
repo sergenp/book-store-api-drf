@@ -15,6 +15,7 @@ router = routers.DefaultRouter()
 router.register(r'author', library_views.AuthorView, 'author')
 router.register(r'publisher', library_views.PublisherView, 'publisher')
 router.register(r'book', library_views.BookView, 'book')
+router.register(r'bookrating', library_views.BookRatingView, 'bookrating')
 router.register(r'category', library_views.CategoryView, 'category')
 router.register(r'user', library_views.UserView, 'user')
 # commerce backend

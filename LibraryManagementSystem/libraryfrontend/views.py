@@ -3,10 +3,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
-from .serializers import AuthorSerializer, BookSerializer, CategorySerializer, PublisherSerializer, RegisterSerializer, UserSerializer
-from .models import AuthorModel, BookModel, CategoryModel, PublisherModel
+from .serializers import AuthorSerializer, BookRatingSerializer, BookSerializer, CategorySerializer, PublisherSerializer, RegisterSerializer, UserSerializer
+from .models import AuthorModel, BookModel, BookRatingModel, CategoryModel, PublisherModel
 from rest_framework_jwt.settings import api_settings
 
 
@@ -30,7 +30,28 @@ class BookView(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ("price", "name", "published_date", "store_amount", "pages")
     search_fields = ('name',)
     ordering = ("id", )
+   
+class BookRatingView(viewsets.ModelViewSet):
+    serializer_class = BookRatingSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    authentication_classes = (JSONWebTokenAuthentication, )
+    queryset = BookRatingModel.objects.all()
+    ordering = ("id", )
     
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        book = BookModel.objects.get(pk=request.data["book"])
+        book_rating, _ = BookRatingModel.objects.get_or_create(book=book, 
+                                                       user=request.user)
+        book_rating.rating = request.data["rating"]
+        book_rating.save()
+        return Response(data={
+            **serializer.data,
+            **{"detail" : f"Successfully rated {book.name} {book_rating.rating}"},
+        })
+
+        
 class CategoryView(viewsets.ReadOnlyModelViewSet):
     serializer_class = CategorySerializer
     queryset = CategoryModel.objects.all()

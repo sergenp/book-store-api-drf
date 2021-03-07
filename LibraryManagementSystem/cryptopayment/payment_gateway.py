@@ -19,6 +19,7 @@ def create_order(payment):
     
 def create_payment_checker():
     threading.Thread(target=check_payment_success, daemon=True).start()
+    print("Started bitcoin payment checker thread")
 
 def check_payment_success():
     while True:

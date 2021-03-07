@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.response import Response
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel, BookModel
-from .serializers import CartItemSerializer, CartSerializer, OrderSerializer, ShippingSerializer
+from .serializers import CartSerializer, OrderSerializer, ShippingSerializer
 from libraryfrontend.serializers import BookSerializer
 
 class CartView(viewsets.GenericViewSet,

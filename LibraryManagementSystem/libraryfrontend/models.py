@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.timezone import now
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class BaseQuerySet(models.QuerySet):
@@ -98,6 +99,26 @@ class BookModel(BaseModel):
     category = models.ForeignKey(CategoryModel, on_delete=models.SET_NULL, null=True, blank=True)
     publisher = models.ForeignKey(PublisherModel, on_delete=models.SET_NULL, null=True, blank=True)
     
+    @property
+    def overall_rating(self):
+        # get all the BookRatingModel from the database
+        ratings = BookRatingModel.objects.all().filter(book=self.id)
+        if len(ratings) > 0:
+            return sum([x.rating for x in ratings]) / len(ratings)
+        else:
+            return 0
 
     def __str__(self):
         return self.name
+
+class BookRatingModel(BaseModel):
+    book = models.ForeignKey(BookModel, on_delete=models.CASCADE, null=False, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)], default=0)    
+
+    class Meta:
+        unique_together = ['book', 'user']
+
+    def __str__(self):
+        return f"Book {self.book.name} rated {self.rating} by User {self.user.username}"
+    
