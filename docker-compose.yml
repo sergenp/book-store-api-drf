@@ -1,0 +1,14 @@
+version: '3.4'
+
+services:
+  bookstoreapidrf:
+    image: bookstoreapidrf
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env.settings
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app:z

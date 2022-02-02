@@ -1,25 +1,33 @@
-# this is the module that checks for Payment models in the database
-# and if the payment is received in the given bitcoin address
-# it sets the Payment model's success to True
-# then calls the create order function, and creates an order for the cart
+"""
+This is the script that checks for Payment models in the database
+and if the payment is received in the given bitcoin address
+it sets the Payment model's success to True
+then calls the create order function, and creates an order for the cart
+"""
 
-from commercebackend.models import CartModel, OrderModel
-from cryptopayment.models import Payment, Invoice
-import bit
-import bit.exceptions
 import threading
 import time
 
+import bit
+import bit.exceptions
+from commercebackend.models import CartModel, OrderModel
+
+from cryptopayment.models import Invoice, Payment
+
+
 def create_order(payment):
-    order = OrderModel.objects.create(user=payment.user, 
-                              cart=payment.cart, shipping=payment.shipping)
+    order = OrderModel.objects.create(
+        user=payment.user, cart=payment.cart, shipping=payment.shipping
+    )
     print(f"{order} has been created")
     invoice = Invoice.objects.create(payment=payment, order=order)
     print(f"{invoice} has been created")
-    
+
+
 def create_payment_checker():
     threading.Thread(target=check_payment_success, daemon=True).start()
     print("Started bitcoin payment checker thread")
+
 
 def check_payment_success():
     while True:
@@ -28,7 +36,7 @@ def check_payment_success():
             btc_cost = payment.total_price_btc
             # get the bitcoin address for the payment
             wallet = bit.PrivateKeyTestnet(payment.btc_address_wif)
-            if wallet.get_balance('btc') == str(btc_cost):
+            if wallet.get_balance("btc") == str(btc_cost):
                 print(f"Payment recieved for {payment}")
                 # if it is successfull, set the success flag to 1
                 payment.success = 1
@@ -39,7 +47,8 @@ def check_payment_success():
                 cart.save()
                 payment.save()
                 create_order(payment)
-        time.sleep(60) # wait a minute, continue checking payments
+        time.sleep(60)  # wait a minute, continue checking payments
+
 
 # this function moves all the successfull payments from payment wallets to a specificed wallet
 # move_payments('bitcoin_wallet_address')

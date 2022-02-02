@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import datetime
 from pathlib import Path
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -33,24 +32,24 @@ ALLOWED_HOSTS = []
 # Application definition
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'requestlogs_to_file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': './tmp/requestlogs.log',
-        },
-    },
-    'loggers': {
-        'requestlogs': {
-            'handlers': ['requestlogs_to_file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'requestlogs_to_file': {
+#             'level': 'INFO',
+#             'class': 'logging.FileHandler',
+#             'filename': '../tmp/requestlogs.log',
+#         },
+#     },
+#     'loggers': {
+#         'requestlogs': {
+#             'handlers': ['requestlogs_to_file'],
+#             'level': 'INFO',
+#             'propagate': False,
+#         },
+#     },
+# }
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -69,20 +68,17 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'requestlogs.middleware.RequestLogsMiddleware',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True 
 CORS_ALLOW_CREDENTIALS = True
 
-ROOT_URLCONF = 'LibraryManagementSystem.urls'
+ROOT_URLCONF = 'conf.urls'
 
 TEMPLATES = [
     {
@@ -99,9 +95,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'LibraryManagementSystem.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
