@@ -26,8 +26,6 @@ def create_order(payment):
 
 def create_payment_checker():
     threading.Thread(target=check_payment_success, daemon=True).start()
-    print("Started bitcoin payment checker thread")
-
 
 def check_payment_success():
     while True:
@@ -54,7 +52,8 @@ def check_payment_success():
 # move_payments('bitcoin_wallet_address')
 def move_payments(to_wallet):
     # get all the payments with success 1
-    for payment in Payment.objects.all().filter(success=1):
+    payments = Payment.objects.all().filter(success=1)
+    for payment in payments:
         # get the wallet
         wallet = bit.PrivateKeyTestnet(payment.btc_address_wif)
         # create transactions

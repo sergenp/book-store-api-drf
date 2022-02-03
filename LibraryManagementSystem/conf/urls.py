@@ -34,9 +34,3 @@ urlpatterns = (
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 )
-
-
-# create the payment checker thread
-create_payment_checker()
-# move the payments back to my testnet wallet
-# move_payments('tb1qe4f69mm056hqhhagphfqe5qp0wnggrxz3rn3nz')
