@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import AuthorModel, BookModel, CategoryModel, PublisherModel, BookRatingModel
+
+from .models import (
+    AuthorModel,
+    BookModel,
+    BookRatingModel,
+    CategoryModel,
+    PublisherModel,
+)
 
 
 @admin.register(AuthorModel, BookModel, CategoryModel, PublisherModel, BookRatingModel)

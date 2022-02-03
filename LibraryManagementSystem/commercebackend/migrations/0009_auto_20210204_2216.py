@@ -6,37 +6,37 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('commercebackend', '0008_cartmodel_bought_at'),
+        ("commercebackend", "0008_cartmodel_bought_at"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='cartmodel',
-            name='bought_at',
+            model_name="cartmodel",
+            name="bought_at",
         ),
         migrations.AlterField(
-            model_name='cartitemmodel',
-            name='is_test_data',
+            model_name="cartitemmodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='cartmodel',
-            name='bought',
+            model_name="cartmodel",
+            name="bought",
             field=models.BooleanField(default=0),
         ),
         migrations.AlterField(
-            model_name='cartmodel',
-            name='is_test_data',
+            model_name="cartmodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='ordermodel',
-            name='is_test_data',
+            model_name="ordermodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='shippingmodel',
-            name='is_test_data',
+            model_name="shippingmodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
     ]

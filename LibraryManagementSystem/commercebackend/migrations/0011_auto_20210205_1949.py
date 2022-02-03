@@ -8,17 +8,17 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('commercebackend', '0010_auto_20210205_0723'),
+        ("commercebackend", "0010_auto_20210205_0723"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='shippingmodel',
-            name='is_current',
+            model_name="shippingmodel",
+            name="is_current",
             field=models.BooleanField(default=1),
         ),
         migrations.AlterUniqueTogether(
-            name='shippingmodel',
-            unique_together={('user', 'is_current')},
+            name="shippingmodel",
+            unique_together={("user", "is_current")},
         ),
     ]

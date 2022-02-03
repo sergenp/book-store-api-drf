@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('libraryfrontend', '0007_bookmodel_price'),
+        ("libraryfrontend", "0007_bookmodel_price"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='bookmodel',
-            old_name='amount',
-            new_name='store_amount',
+            model_name="bookmodel",
+            old_name="amount",
+            new_name="store_amount",
         ),
         migrations.AddField(
-            model_name='bookmodel',
-            name='ISBN',
+            model_name="bookmodel",
+            name="ISBN",
             field=models.IntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='bookmodel',
-            name='pages',
+            model_name="bookmodel",
+            name="pages",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]
