@@ -20,6 +20,7 @@ docker-compose up
 ##### Start it using manage.py
 ```bash
 cd LibraryManagementSystem
+python manage.py create_payment_checker # create the thread that checks for payments
 python manage.py runserver localhost:5000
 ```
 
@@ -28,6 +29,15 @@ You can access to localhost:5000/admin/ url with this login data:
 username : sergen
 password : sergen123
 ```
+
+###### Move payments to a wallet
+
+You can use 
+```bash
+python manage.py move_payments bitcoin_testnet_wallet_address
+```
+
+to move all the completed payments to your wallet
 
 
 ### Deployment
