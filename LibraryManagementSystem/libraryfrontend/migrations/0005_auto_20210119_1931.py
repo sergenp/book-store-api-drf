@@ -6,48 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('libraryfrontend', '0004_auto_20210119_1926'),
+        ("libraryfrontend", "0004_auto_20210119_1926"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='authormodel',
-            name='is_test_data',
+            model_name="authormodel",
+            name="is_test_data",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='authormodel',
-            name='modified_on',
+            model_name="authormodel",
+            name="modified_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='bookmodel',
-            name='is_test_data',
+            model_name="bookmodel",
+            name="is_test_data",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='bookmodel',
-            name='modified_on',
+            model_name="bookmodel",
+            name="modified_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='categorymodel',
-            name='is_test_data',
+            model_name="categorymodel",
+            name="is_test_data",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='categorymodel',
-            name='modified_on',
+            model_name="categorymodel",
+            name="modified_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='publishermodel',
-            name='is_test_data',
+            model_name="publishermodel",
+            name="is_test_data",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='publishermodel',
-            name='modified_on',
+            model_name="publishermodel",
+            name="modified_on",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]

@@ -1,5 +1,7 @@
 from django.contrib import admin
+
 from .models import CartItemModel, CartModel, OrderModel, ShippingModel
+
 
 @admin.register(CartItemModel, CartModel, OrderModel, ShippingModel)
 class BaseAdminModel(admin.ModelAdmin):

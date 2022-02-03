@@ -6,28 +6,28 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('libraryfrontend', '0013_auto_20210201_1415'),
+        ("libraryfrontend", "0013_auto_20210201_1415"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='authormodel',
-            name='is_test_data',
+            model_name="authormodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='bookmodel',
-            name='is_test_data',
+            model_name="bookmodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='categorymodel',
-            name='is_test_data',
+            model_name="categorymodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='publishermodel',
-            name='is_test_data',
+            model_name="publishermodel",
+            name="is_test_data",
             field=models.BooleanField(default=True),
         ),
     ]

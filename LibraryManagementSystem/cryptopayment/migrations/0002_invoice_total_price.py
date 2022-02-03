@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cryptopayment', '0001_initial'),
+        ("cryptopayment", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='invoice',
-            name='total_price',
+            model_name="invoice",
+            name="total_price",
             field=models.DecimalField(decimal_places=2, default=0, max_digits=10),
             preserve_default=False,
         ),

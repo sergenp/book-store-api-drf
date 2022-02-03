@@ -7,16 +7,20 @@ I keep the database updated with the newest additions and data, so it should be 
 
 Create venv
 ```bash
-py -m venv libraryenv
+py -m venv env
 # after activation the env
 pip install -r requirements.txt
 ```
 
-Start the server
+##### Start it using docker-compose
+```bash
+docker-compose up
 ```
-cd LibraryMangementSystem
-# navigate your bash to LibraryMangementSystem/
-py manage.py runserver localhost:5000
+
+##### Start it using manage.py
+```bash
+cd LibraryManagementSystem
+python manage.py runserver localhost:5000
 ```
 
 You can access to localhost:5000/admin/ url with this login data:
