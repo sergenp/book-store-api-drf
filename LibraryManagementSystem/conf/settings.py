@@ -20,24 +20,39 @@ ALLOWED_HOSTS = []
 # Application definition
 
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'requestlogs_to_file': {
-#             'level': 'INFO',
-#             'class': 'logging.FileHandler',
-#             'filename': '../tmp/requestlogs.log',
-#         },
-#     },
-#     'loggers': {
-#         'requestlogs': {
-#             'handlers': ['requestlogs_to_file'],
-#             'level': 'INFO',
-#             'propagate': False,
-#         },
-#     },
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': './logs/general.log',
+            'level' : "INFO",
+            'formatter' : 'verbose'
+        },
+        'requestlogs_to_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': './logs/requestlogs.log',
+        },
+    },
+    'loggers': {
+        'payment_gateway': {
+            'level': 'INFO',
+            'handlers': ['file'],
+        },
+        'requestlogs': {
+            'handlers': ['requestlogs_to_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -50,7 +65,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "libraryfrontend",
-    "cryptopayment",
+    "cryptopayment.apps.CryptopaymentConfig",
     "commercebackend",
 ]
 

@@ -11,7 +11,6 @@ services:
              python manage.py makemigrations &&
              python manage.py migrate &&
              python manage.py collectstatic --no-input &&
-             python manage.py create_payment_checker &&
              uvicorn conf.asgi:application --host 0.0.0.0 --reload"
     env_file:
       - .env.settings

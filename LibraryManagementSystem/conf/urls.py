@@ -1,6 +1,5 @@
 from commercebackend import views as commerce_views
 from cryptopayment import views as crypto_views
-from cryptopayment.payment_gateway import create_payment_checker, move_payments
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
